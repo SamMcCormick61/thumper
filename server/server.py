@@ -7,7 +7,8 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET'])
 def main():
-	return render_template("index.html", progress=transform.progress())
+	done, working, errored = transform.progress()
+	return render_template("index.html", done=done, working=working, errored=errored)
 
 @app.route("/upload", methods=['POST'])
 def upload():
@@ -18,12 +19,13 @@ def upload():
 		e = transform.start(f, filename)
 		if e is not None:
 			errors.append(e)
-	return render_template("errors.html", errors=errors)
+	return main()
 
 @app.route("/progress", methods=["GET"])
 def progress():
 	done,working,errored = transform.progress()
 	return jsonify(done=done, working=working, errored=errored)
+
 
 
 
