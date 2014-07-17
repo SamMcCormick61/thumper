@@ -1,0 +1,1 @@
+gcc -o generator generator.c libsndfile.so kiss_fftr.c kiss_fft.c -lm
