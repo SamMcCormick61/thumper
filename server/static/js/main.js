@@ -1,8 +1,17 @@
 (function(){
 	var song;
+	$(document).ready(function(){
+		setup();
+	});
 
 	function update(html){
 		$("body").html(html);
+	}
+
+	function setup(){
+		$("#done li").click(function(e){
+			player.addSong($(this).text());
+		});
 	}
 
 	$("#upload").submit(function(e){
