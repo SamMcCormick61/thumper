@@ -4,6 +4,15 @@
 		setup();
 	});
 
+	window.dim = {x:0, y:0};
+
+	function resize(){
+		dim.x = Math.floor(window.innerWidth)-500;
+		dim.y = Math.floor(window.innerHeight);
+		c.setAttribute("width",dim.x);
+		c.setAttribute("height", dim.y);
+	}
+
 	function update(html){
 		$("body").html(html);
 	}
@@ -12,6 +21,14 @@
 		$("#done li").click(function(e){
 			player.addSong($(this).text());
 		});
+
+		window.c = document.getElementById("viz");
+		window.ctx = c.getContext("2d");
+		// ctx.globalAlpha = 0.5;
+		ctx.globalCompositeOperation = "copy";
+
+		window.onresize = resize;
+		resize();
 	}
 
 	$("#upload").submit(function(e){

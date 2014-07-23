@@ -6,35 +6,6 @@
 	var audio = $audio[0];
 	var $progress = $("progress");
 
-	var fadeIn = 50;
-	function beat(){
-		$("body").animate({
-			backgroundColor: "#aa0000"
-		}, fadeIn, "linear", function(){
-			$("body").animate({
-				backgroundColor: "#fff",
-			}, fadeIn*2);
-		})
-	}
-
-	function animate(freq_mag){
-		var i;
-		var $viz = $("#viz");
-		_.each(freq_mag, function(elt, i){
-			var $block = $viz.find("#"+i);
-			$block.css('height', Math.max(freq_mag[i]*3, 1));
-			/*
-			$block.animate({
-				height: freq_mag[i] * 10
-			}, 0, function(){
-				$block.animate({
-					height: 10
-				}, 50);
-			});
-			*/
-		});
-	}
-
 	function updateTime(){
 		var c = audio.currentTime;
 		var d = audio.duration;
@@ -52,7 +23,7 @@
 				// no point we merely fucked up
 			} else if (nextBeatTime - c < 1) {
 				setTimeout((function(f){
-					return function(){ animate(f); }
+					return function(){ window.vizualize(f); }
 				})(nextBeat.freq_mag),  (nextBeatTime - c) * 1000);
 
 			} else if (nextBeatTime - c >= 1) {
