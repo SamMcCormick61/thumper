@@ -34,7 +34,7 @@ class Generator(object):
 
 		self.chunk = 1024
 		self.num_bands = 32
-		self.beats = [0. for i in xrange(self.total_frames / self.chunk)]
+		self.beats = [[] for i in xrange(self.total_frames / self.chunk)]
 		self.pos = 0
 		self.bands = [FrequencyBandAggregate(32) for i in xrange(self.num_bands)]
 
@@ -46,16 +46,23 @@ class Generator(object):
 		data = self.wave.readframes(self.chunk)
 		window = struct.unpack('h'*(self.chunk*self.channels), data)
 		if self.channels == 2:
-			# average the two channels
 			cw = map(lambda x,y: (x+y*1j), window[::2], window[1::2])
 
 		freqs = numpy.fft.fft(cw)
 		band_size = self.chunk / self.num_bands
 
+		beat = []
 		for i in xrange(self.chunk / band_size):
-			e = sum(cw[i*band_size:(i+1)*band_size])
+			e = 0
+			for j in xrange(band_size):
+				c = cw[i*band_size + j]
+				e += c.real**2 + c.imag**2
+
 			avg = self.bands[i].sample(e)
-			if e > C * avg: self.beats[self.pos] = 1
+			beat.append(e / avg)
+		for b in beat:
+			if b > C:
+				self.beats.append(beats)
 		# separate the frequencies into subbands
 		self.pos += 1
 		#print self.pos, self.total_frames / self.chunk
@@ -63,21 +70,25 @@ class Generator(object):
 		self.wave.close()
 
 
-def make_led(out, name, led_dir):
-	print "generatoring it!", out
-	gen_exec = config.SERVER_PATH + "/speedy/generator"
-	p = Popen([gen_exec, out], stdin=PIPE, stdout=PIPE)
-	stdout,stderr = p.communicate()
-	times = stdout.split('\n')
-
-	def parse_line(line):
-		t, rest = line.split(':')
-		return {
-			'time' : float(t),
-			'freq_mag' : [float(f) for f in rest.split()]
-		}
-	parsed_times = [parse_line(l) for l in times if l]
+def make_led(out, name, led_dir, use_c=True):
+	print "generatoring %s!" %name
 	led_file_path = "%s/%s.LED" %(led_dir, name)
+	if use_c:
+		gen_exec = config.SERVER_PATH + "/speedy/generator"
+		p = Popen([gen_exec, out], stdin=PIPE, stdout=PIPE)
+		stdout,stderr = p.communicate()
+		times = stdout.split('\n')
+
+		def parse_line(line):
+			t, rest = line.split(':')
+			return {
+				'time' : float(t),
+				'freq_mag' : [float(f) for f in rest.split()]
+			}
+		parsed_times = [parse_line(l) for l in times if l]
+	else:
+		g = Generator(out)
+		g.read_all()
 
 	with open(led_file_path, 'w') as f:
 		s = json.dumps(parsed_times, indent=2)
@@ -89,8 +100,8 @@ def make_led(out, name, led_dir):
 
 
 if __name__ == "__main__":
-	out = sys.argv[1]
-	name = ".".join(out.split('/')[-1].split('.')[:-1])
-	out_led = config.LED_DIRECTORY
-	print out, name, out_led
-	make_led(out, name, out_led)
+	outs = sys.argv[1:]
+	for out in outs:
+		name = ".".join(out.split('/')[-1].split('.')[:-1])
+		out_led = config.LED_DIRECTORY
+		make_led(out, name, out_led)

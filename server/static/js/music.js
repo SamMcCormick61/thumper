@@ -42,24 +42,6 @@
 			success: success
 		});
 	}
-	function makeViz(count){
-		var i;
-		var $viz = $("#viz");
-		$viz.html('');
-		for(i = 0; i < count; i++){
-			var $block = $("<div></div>");
-			$block.attr({
-				class: 'block',
-				id: i,
-			}).css({
-				width:'10px',
-				height:'10px',
-				'background-color':'grey',
-				float:'left'
-			});
-			$viz.append($block);
-		}
-	}
 
 	function addSong(file){
 		audio.pause();
@@ -67,17 +49,14 @@
 		player.name = file.split(".").slice(0,-1).join(".");
 
 		getLED(player.name, function(json){
-			makeViz(json[0].freq_mag.length);
 			player.loc = 0;
 			player.LED = json;
 			audio.src = MUSIC + file;
 
 
 			$progress.val(0);
-
-			$audio.bind('canplay', function() {
-				audio.currentTime = 0;
-				$audio.bind('timeupdate', updateTime);
+			$audio.unbind('canplay').bind('canplay', function() {
+				$audio.unbind('timeupdate').bind('timeupdate', updateTime);
 				audio.play();
 			});
 
