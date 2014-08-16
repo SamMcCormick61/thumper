@@ -1,6 +1,7 @@
 #include "kiss_fft.h"
 #include "audio_input.h"
 
+
 typedef struct {
 	scalar_t *history;
 	int hsize;
@@ -29,7 +30,7 @@ representing the next chunk frames of the audio (complex signal)
 when you're done, just call tear_down
 */
 
-geninfo_t *setup(int num_bands, int history_size, int chunk);
+geninfo_t *setup_gen(int num_bands, int history_size, int chunk);
 
 void tear_down(geninfo_t *ginfo);
 

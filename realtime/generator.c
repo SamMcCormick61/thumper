@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <math.h>
 
-geninfo_t *setup(int num_bands, int history_size, int chunk){
+geninfo_t *setup_gen(int num_bands, int history_size, int chunk){
     geninfo_t *inf = (geninfo_t *)malloc(sizeof(geninfo_t));
 
     inf->num_bands = num_bands;
@@ -13,11 +13,11 @@ geninfo_t *setup(int num_bands, int history_size, int chunk){
     inf->chunk_num = 0;
     inf->cfg = kiss_fft_alloc(chunk, 0, NULL, NULL);
 
-    inf->fft_output = malloc(sizeof(kiss_fft_cpx)*chunk);
-    inf->real_fft_output = malloc(sizeof(scalar_t)*chunk);
+    inf->fft_output = malloc(sizeof(kiss_fft_cpx)*(size_t)chunk);
+    inf->real_fft_output = malloc(sizeof(scalar_t)*(size_t)chunk);
 
     // true output of generate()
-    inf->output = malloc(sizeof(scalar_t)*num_bands);
+    inf->output = malloc(sizeof(scalar_t)*(size_t)num_bands);
 
     return inf;
 }
@@ -45,9 +45,9 @@ void generate(geninfo_t *inf, kiss_fft_cpx *input, int len){
 
 band_t *_alloc_bands(int num_bands, int history_size){
     int i;
-    band_t *bands = malloc(sizeof(band_t) * num_bands);
+    band_t *bands = malloc(sizeof(band_t) * (size_t)num_bands);
     for(i = 0; i < num_bands; i++){
-        scalar_t *history = malloc(sizeof(scalar_t) * history_size);
+        scalar_t *history = malloc(sizeof(scalar_t) * (size_t)history_size);
         band_t b = {
             history,
             history_size,
@@ -58,6 +58,7 @@ band_t *_alloc_bands(int num_bands, int history_size){
         };
         memcpy(bands + i, &b, sizeof(band_t));
     }
+    return bands;
 }
 
 void _dealloc_bands(band_t *bands, int num_bands){
@@ -87,7 +88,7 @@ void _history_push(band_t band, scalar_t intensity){
         var = var + (s * s);
     }
     var = var / (float)band.hsize;
-    band.std = sqrt(var);
+    band.std = (scalar_t)sqrt(var);
 }
 
 
@@ -97,7 +98,7 @@ scalar_t _analyze_band(band_t band){
     scalar_t std = band.std;
 
     return cur < avg ? 0 :
-               std == 0 ? 0 : (cur - avg)/std;
+                 std ? (cur - avg)/std : 0;
 }
 
 void _analyze(band_t *bands, int num_bands,  scalar_t *out){
