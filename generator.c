@@ -17,8 +17,8 @@ geninfo_t *setup_gen(int num_bands, int history_size, int chunk){
     inf->real_fft_output = malloc(sizeof(scalar_t)*(size_t)chunk);
 
     // true output of generate()
-    inf->output = malloc(sizeof(scalar_t)*(size_t)num_bands);
-
+    inf->output = malloc(sizeof(scalar_t) * (size_t)num_bands);
+    memset(inf->output, 0, sizeof(scalar_t) * (size_t)num_bands);
     return inf;
 }
 
